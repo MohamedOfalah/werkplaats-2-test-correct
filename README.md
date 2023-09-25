@@ -11,12 +11,12 @@ Om Flask te kunnen starten zul je eerst de Flask packages moeten installeren. Wi
 ```
 pip install virtualenv
 virtualenv venv
-.\venv\sripts\activate
+.\venv\scripts\activate
 pip install -r requirements.txt
 ```
 
 Om de demo applicatie te starten: 
 ``` 
-.\venv\sripts\activate
-python app.py
+
+flask --app hello run
 ```
