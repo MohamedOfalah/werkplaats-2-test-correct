@@ -14,6 +14,7 @@ app.config['SECRET_KEY'] = 'b2a832153facb317feaa0d25598f990a0c87b63ac3ed5e22aae2
 app.config["SESSION_PERMANENT"] = False
 app.config["SESSION_TYPE"] = "filesystem"
 
+
 @app.route('/create_admin', methods=['GET', 'POST'])
 def create_admin():
     if request.method == 'POST':
@@ -33,6 +34,8 @@ def create_admin():
         return "Admin user created successfully."
 
     return render_template('admin_creation_form.html')  # Create an HTML form for admin creation
+
+
 @app.route("/datakwaliteit/<table>")
 def table(table):
     db_connection = connect_to_database('testcorrect_vragen.db')
@@ -41,17 +44,21 @@ def table(table):
 
     return render_template('table.html', title="table", data=data)
 
+
 @app.route("/home")
 def home():
     if g.gebruikersnaam:
         return render_template('homepage.html', gebruiker=session['gebruikersnaam'])
     return redirect(url_for('login'))
+
+
 @app.before_request
 def before_request():
     g.gebruikersnaam = None
 
     if 'gebruikersnaam' in session:
         g.gebruikersnaam = session['gebruikersnaam']
+
 
 @app.route("/registreer", methods=['GET', 'POST'])
 @admin_required
@@ -60,7 +67,7 @@ def registreer():
     con = sqlite3.connect('testcorrect_vragen.db')
     c = con.cursor()
     if request.method == 'POST':
-        if (request.form['gebruikersnaam'] != "" and request.form["wachtwoord"] != ""):
+        if request.form['gebruikersnaam'] != "" and request.form["wachtwoord"] != "":
             gebruikersnaam = request.form["gebruikersnaam"]
             wachtwoord = request.form["wachtwoord"]
             statement = f"INSERT INTO Gebruiker (gebruikersnaam, wachtwoord) VALUES ('{gebruikersnaam}', '{wachtwoord}')"
@@ -80,27 +87,29 @@ def unauthorized():
 def login():
     form = LoginForm()
     con = sqlite3.connect('testcorrect_vragen.db')
-    con.row_factory=sqlite3.Row
+    con.row_factory = sqlite3.Row
     cur = con.cursor()
     if request.method == 'POST':
-            session.pop('gebruikersnaam', None)
-            gebruikersnaam = request.form['gebruikersnaam']
-            wachtwoord = request.form['wachtwoord']
-            cur = con.cursor()
-            cur.execute("SELECT gebruikersnaam, wachtwoord FROM Gebruiker WHERE gebruikersnaam=? and wachtwoord=?",(gebruikersnaam, wachtwoord))
-            data = cur.fetchone()
+        session.pop('gebruikersnaam', None)
+        gebruikersnaam = request.form['gebruikersnaam']
+        wachtwoord = request.form['wachtwoord']
+        cur = con.cursor()
+        cur.execute("SELECT gebruikersnaam, wachtwoord FROM Gebruiker WHERE gebruikersnaam=? and wachtwoord=?",
+                    (gebruikersnaam, wachtwoord))
+        data = cur.fetchone()
 
-            if data:
+        if data:
 
-                session["gebruikersnaam"] = data[0]
-                session["wachtwoord"] = data[1]
-                return redirect("home")
+            session["gebruikersnaam"] = data[0]
+            session["wachtwoord"] = data[1]
+            return redirect("home")
 
-            else:
-                
-                flash("gebruikersnaam of wachtwoord is onjuist")
+        else:
+
+            flash("gebruikersnaam of wachtwoord is onjuist")
 
     return render_template('login1.1.html', title='Log in', form=form)
+
 
 @app.route('/getsession')
 def getsession():
@@ -110,10 +119,12 @@ def getsession():
     else:
         return "Welcome Anonymous"
 
+
 @app.route('/logout')
 def logout():
     session.pop('gebruikersnaam', None)
     return redirect(url_for('login'))
+
 
 @app.route("/vragen")
 def vragen():
@@ -144,21 +155,24 @@ def vraag(vraag_id):
             set_db_data(
                 db_connection, f"UPDATE vragen SET vraag = '{form.vraag.data}' WHERE id={vraag_id}")
             set_db_data(db_connection, f"UPDATE vragen SET leerdoel = {form.leerdoel.data} WHERE id={vraag_id}")
-            set_db_data(db_connection, f"UPDATE vragen SET gemarkeerd = {request.form.get('gemarkeerd')} WHERE id={vraag_id}")
+            set_db_data(db_connection,
+                        f"UPDATE vragen SET gemarkeerd = {request.form.get('gemarkeerd')} WHERE id={vraag_id}")
             flash('Vraag is aangepast!')
 
             return redirect(url_for('vraag', vraag_id=vraag["id"]))
 
-
-        marked_vraag = Markup(vraag["vraag"].replace("&nbsp;", "<mark>&amp;nbsp;</mark>").replace("<br>", "<mark>&lt;br&gt;</mark>"))
+        marked_vraag = Markup(
+            vraag["vraag"].replace("&nbsp;", "<mark>&amp;nbsp;</mark>").replace("<br>", "<mark>&lt;br&gt;</mark>"))
 
         form.vraag.default = vraag['vraag']
         form.process()
 
         db_connection.close()
-        return render_template('vraag.html', title=f"Vraag items - Vraag {vraag['id']}", marked_vraag=marked_vraag, vraag=vraag, leerdoelen=leerdoelen,
+        return render_template('vraag.html', title=f"Vraag items - Vraag {vraag['id']}", marked_vraag=marked_vraag,
+                               vraag=vraag, leerdoelen=leerdoelen,
                                form=form)
     return redirect(url_for('login'))
+
 
 @app.route("/datakwaliteit")
 def datakwaliteit():
@@ -169,6 +183,7 @@ def datakwaliteit():
         return render_template("datakwaliteit.html", title="Data kwaliteit", tables=tables)
     return redirect(url_for('login'))
 
+
 @app.route("/tables/<table>")
 def tables(table):
     if g.gebruikersnaam:
@@ -176,23 +191,29 @@ def tables(table):
         table_info = get_db_data(db_connection, f"SELECT name, type FROM pragma_table_info('{table}')").fetchall()
         tables = get_db_data(db_connection, f"SELECT name FROM sqlite_master WHERE type='table'")
         datatypes = ["INTEGER", "VARCHAR", "BOOLEAN"]
-        return render_template("table.html", title="Data kwaliteit", table_info=table_info, datatypes=datatypes, tables=tables)
+        return render_template("table.html", title="Data kwaliteit", table_info=table_info, datatypes=datatypes,
+                               tables=tables)
     return redirect(url_for('login'))
+
 
 @app.route("/tabellen/<tabel>")
 def tabellen(tabel):
     if g.gebruikersnaam:
         db_connection = connect_to_database("testcorrect_vragen.db")
-        table_columns_info = get_db_data(db_connection, f"SELECT name, type FROM pragma_table_info('{tabel}')").fetchall()
+        table_columns_info = get_db_data(db_connection,
+                                         f"SELECT name, type FROM pragma_table_info('{tabel}')").fetchall()
         table_data = get_db_data(db_connection, f"SELECT * FROM '{tabel}'").fetchall()
-        return render_template("tabel.html", title="Data kwaliteit", table_columns_info=table_columns_info, table_data=table_data, tabel=tabel)
+        return render_template("tabel.html", title="Data kwaliteit", table_columns_info=table_columns_info,
+                               table_data=table_data, tabel=tabel)
     return redirect(url_for('login'))
+
 
 @app.route("/kolom/<tabel>/<kolom>", methods=["GET", "POST"])
 def kolom(tabel, kolom):
     if g.gebruikersnaam:
         db_connection = connect_to_database("testcorrect_vragen.db")
-        column_info = get_db_data(db_connection, f"SELECT * FROM pragma_table_info('{tabel}') WHERE name='{kolom}'").fetchall()
+        column_info = get_db_data(db_connection,
+                                  f"SELECT * FROM pragma_table_info('{tabel}') WHERE name='{kolom}'").fetchall()
         column_data = get_db_data(db_connection, f'SELECT id, "{kolom}" FROM "{tabel}"').fetchall()
         datatypes = ["INTEGER", "VARCHAR", "TEXT", "BOOLEAN"]
 
@@ -200,16 +221,18 @@ def kolom(tabel, kolom):
 
         if request.method == "POST":
             if request.form.get('datatype-select') == "VARCHAR":
-                change_data_type(tabel, kolom, f"{request.form.get('datatype-select')}({request.form.get('datatype-amount-of-varchar')})")
+                change_data_type(tabel, kolom,
+                                 f"{request.form.get('datatype-select')}({request.form.get('datatype-amount-of-varchar')})")
 
             else:
                 change_data_type(tabel, kolom, request.form.get('datatype-select'))
 
             return redirect(url_for('kolom', tabel=tabel, kolom=kolom))
 
-
-        return render_template("kolom.html", title="Data kwaliteit", column_info=column_info, column_data=column_data, datatypes=datatypes, tabel=tabel)
+        return render_template("kolom.html", title="Data kwaliteit", column_info=column_info, column_data=column_data,
+                               datatypes=datatypes, tabel=tabel)
     return redirect(url_for('login'))
+
 
 @app.route("/<tabel>/rij/<rij_id>", methods=["GET", "POST"])
 def rij(tabel, rij_id):
@@ -231,7 +254,7 @@ def rij(tabel, rij_id):
             for col in column_data:
                 if col != "id":
                     this_col_info = get_db_data(db_connection,
-                                              f'SELECT type FROM pragma_table_info("{tabel}") WHERE name="{col}"').fetchone()
+                                                f'SELECT type FROM pragma_table_info("{tabel}") WHERE name="{col}"').fetchone()
                     if this_col_info['type'] == "BOOLEAN":
                         if request.form.get(col) == "0" or request.form.get(col) == None or request.form.get(col) == 0:
                             set_db_data(db_connection, f'UPDATE {tabel} SET "{col}" = 0 WHERE id = {rij_id}')
@@ -246,9 +269,9 @@ def rij(tabel, rij_id):
             flash('Rij is aangepast!')
             return redirect(url_for('rij', rij_id=rij_id, title="Rij", data=data, tabel=tabel))
 
-
         return render_template("rij.html", title="Rij", data=data, tabel=tabel)
     return redirect(url_for('login'))
+
 
 @app.route("/tussenwaardes", methods=["GET", "POST"])
 def tussenwaardes():
@@ -276,9 +299,11 @@ def tussenwaardes():
             value_a = int(request.form.get('value-a'))
             value_b = int(request.form.get('value-b'))
 
-            data = get_db_data(db_connection, f"SELECT * FROM {selected_table} WHERE {selected_column} BETWEEN {value_a} and {value_b}").fetchall()
+            data = get_db_data(db_connection,
+                               f"SELECT * FROM {selected_table} WHERE {selected_column} BETWEEN {value_a} and {value_b}").fetchall()
 
-            return render_template("tussenwaardes.html", title="Tussenwaardes", table_with_info=table_with_info, data=data)
+            return render_template("tussenwaardes.html", title="Tussenwaardes", table_with_info=table_with_info,
+                                   data=data)
 
         return render_template("tussenwaardes.html", title="Tussenwaardes", table_with_info=table_with_info)
     return redirect(url_for('login'))
