@@ -15,8 +15,6 @@ virtualenv venv
 pip install -r requirements.txt
 ```
 
-Om de demo applicatie te starten: 
-``` 
+Om de demo applicatie te starten in de terminal:
 
-flask --app hello run
-```
+flask --app main run
