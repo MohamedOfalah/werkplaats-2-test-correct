@@ -64,6 +64,6 @@ def table_content(table_name=None):
         )
 
 if __name__ == "__main__":
-    app.run(host=FLASK_IP, port=FLASK_PORT, debug=True)
-
+    app.run(host=FLASK_IP, port=FLASK_PORT, debug=False)
+    
 
