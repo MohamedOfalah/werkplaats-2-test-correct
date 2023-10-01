@@ -38,8 +38,18 @@ def create_admin():
 
 @app.route("/datakwaliteit/<table>")
 def table(table):
+    table_name = table  # Get the table name from the URL parameter
+
+    # Ensure that the table name only contains alphanumeric characters (or adjust this as needed)
+    if not table_name.isalnum():
+        return "Invalid table name"
+
     db_connection = connect_to_database('testcorrect_vragen.db')
-    data = get_db_data(db_connection, f"SELECT * FROM {table}").fetchall()
+
+    # Use a parameterized query to prevent SQL injection
+    query = "SELECT * FROM ?"
+    data = get_db_data(db_connection, query, (table_name,)).fetchall()
+
     db_connection.close()
 
     return render_template('table.html', title="table", data=data)
