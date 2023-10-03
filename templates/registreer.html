@@ -17,7 +17,7 @@
             <a class="nav-link" href="/vraag_items">Vraag items</a>
           </li>
           <li class="nav-item">
-            <a class="nav-link" href="#">Data kwaliteit</a>
+            <a class="nav-link" href="/datakwaliteit">Data kwaliteit</a>
         </ul>
       </div>
     </div>
@@ -29,20 +29,20 @@
           <fieldset class="=form-group">
               <legend class="border-bottom mb-4">Registreer</legend>
               <div class="border-bottom mb-2">
-                {{ form.gebruikersnaam.label(class="form-control-label") }}
-                {{ form.gebruikersnaam(class="form-control form-control-lg") }}
+                {{ form.username.label(class="form-control-label") }}
+                {{ form.username(class="form-control form-control-lg") }}
               </div>
               <div class="border-bottom mb-2">
-                {{ form.wachtwoord.label(class="form-control-label") }}
-                {{ form.wachtwoord(class="form-control form-control-lg") }}
+                {{ form.password.label(class="form-control-label") }}
+                {{ form.password(class="form-control form-control-lg") }}
               </div>
                <div class="border-bottom mb-4">
-                {{ form.bevestig_wachtwoord.label(class="form-control-label") }}
-                {{ form.bevestig_wachtwoord(class="form-control form-control-lg") }}
+                {{ form.confirm_password.label(class="form-control-label") }}
+                {{ form.confirm_password(class="form-control form-control-lg") }}
               </div>
           </fieldset>
           <div class="form-group">
-              {{ form.indienen(class="btn btn-outline-primary") }}
+              {{ form.submit(class="btn btn-outline-primary") }}
           </div>
       </form>
 </div>

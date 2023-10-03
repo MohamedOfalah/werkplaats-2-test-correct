@@ -2,6 +2,7 @@ import os.path
 import sys
 
 from flask import Flask, render_template
+from flask_bcrypt import Bcrypt
 
 from lib.tablemodel import DatabaseModel
 from lib.demodatabase import create_demo_database
@@ -64,6 +65,7 @@ def table_content(table_name=None):
         )
 
 if __name__ == "__main__":
-    app.run(host=FLASK_IP, port=FLASK_PORT, debug=False)
-    
+    app.run(host=FLASK_IP, port=FLASK_PORT, debug=True)
+    bcrypt = Bcrypt(app)
+
 

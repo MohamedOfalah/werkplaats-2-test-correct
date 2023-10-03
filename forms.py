@@ -1,8 +1,10 @@
 from db_data import *
 from flask_wtf import FlaskForm
 from wtforms import SelectField, TextAreaField, SubmitField, StringField, PasswordField, BooleanField
-from wtforms.validators import DataRequired, Length, equal_to
+from wtforms.validators import DataRequired, Length, EqualTo
+from flask_sqlalchemy import SQLAlchemy
 
+db = SQLAlchemy()
 
 class vraagForm(FlaskForm):
     db_connection = connect_to_database("testcorrect_vragen.db")
@@ -14,18 +16,14 @@ class vraagForm(FlaskForm):
     opslaan = SubmitField("Wijzigingen opslaan")
 
 
-class RegistratieForm(FlaskForm):
-    gebruikersnaam = StringField('Gebruikersnaam', validators=[
-                                 DataRequired(), Length(min=2, max=20)])
-    wachtwoord = PasswordField('Wachtwoord', validators=[DataRequired()])
-    bevestig_wachtwoord = PasswordField('Bevestig wachtwoord', validators=[
-                                        DataRequired(), equal_to('wachtwoord')])
-    indienen = SubmitField('Registreer')
-
+class RegisterForm(FlaskForm):
+    username = StringField('Username', validators=[DataRequired(), Length(min=2, max=20)])
+    password = PasswordField('Password', validators=[DataRequired()])
+    confirm_password = PasswordField('Confirm Password', validators=[DataRequired(), EqualTo('password')])
+    submit = SubmitField('Register')
 
 class LoginForm(FlaskForm):
-    gebruikersnaam = StringField("Gebruikersnaam", validators=[
+    username = StringField("username", validators=[
                                  DataRequired(), Length(min=2, max=20)])
-    wachtwoord = PasswordField("Wachtwoord", validators=[DataRequired()])
-    herinner = BooleanField("Herinner mij")
-    indienen = SubmitField("Log in")
+    password = PasswordField("password", validators=[DataRequired()])
+    submit = SubmitField("Log in")

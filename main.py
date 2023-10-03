@@ -1,13 +1,12 @@
 # Version 1.0
 
 from db_data import *
-from os import environ
-
 from flask import Flask, render_template, redirect, url_for, request, flash, session, g
-
-from decorator import admin_required
-from forms import vraagForm, RegistratieForm, LoginForm
+from forms import vraagForm, RegisterForm, LoginForm
 from markupsafe import Markup
+from flask_bcrypt import bcrypt
+import sqlite3
+
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'b2a832153facb317feaa0d25598f990a0c87b63ac3ed5e22aae2255cf6e001ec'
@@ -15,25 +14,6 @@ app.config["SESSION_PERMANENT"] = False
 app.config["SESSION_TYPE"] = "filesystem"
 
 
-@app.route('/create_admin', methods=['GET', 'POST'])
-def create_admin():
-    if request.method == 'POST':
-        username = request.form.get('username')
-        password = request.form.get('password')
-
-        # Check if the user already exists
-        existing_user = User.query.filter_by(username=username).first()
-        if existing_user:
-            return "Username already exists, choose another one."
-
-        # Create the admin user
-        admin_user = User(username=username, password=password, is_admin=True)
-        db.session.add(admin_user)
-        db.session.commit()
-
-        return "Admin user created successfully."
-
-    return render_template('admin_creation_form.html')  # Create an HTML form for admin creation
 
 
 @app.route("/datakwaliteit/<table>")
@@ -57,35 +37,35 @@ def table(table):
 
 @app.route("/home")
 def home():
-    if g.gebruikersnaam:
-        return render_template('homepage.html', gebruiker=session['gebruikersnaam'])
-    return redirect(url_for('login'))
+    if g.username:
+        return render_template('homepage.html', User=session['username'])
+    else:
+        flash('username or password incorrect')
 
 
 @app.before_request
 def before_request():
-    g.gebruikersnaam = None
+    g.username = None
 
-    if 'gebruikersnaam' in session:
-        g.gebruikersnaam = session['gebruikersnaam']
+    if 'username' in session:
+        g.username = session['username']
 
 
-@app.route("/registreer", methods=['GET', 'POST'])
-@admin_required
+@app.route('/registreer', methods=['GET', 'POST'])
 def registreer():
-    form = RegistratieForm()
-    con = sqlite3.connect('testcorrect_vragen.db')
-    c = con.cursor()
+    form = RegisterForm()
     if request.method == 'POST':
-        if request.form['gebruikersnaam'] != "" and request.form["wachtwoord"] != "":
-            gebruikersnaam = request.form["gebruikersnaam"]
-            wachtwoord = request.form["wachtwoord"]
-            statement = f"INSERT INTO Gebruiker (gebruikersnaam, wachtwoord) VALUES ('{gebruikersnaam}', '{wachtwoord}')"
-            c.execute(statement)
+            username = form.username.data
+            password = form.password.data
+            password = bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt())
+            con = sqlite3.connect('testcorrect_vragen.db')
+            c = con.cursor()
+            statement = "INSERT INTO User (username, password) VALUES (?, ?)"
+            c.execute(statement, (username, password))
             con.commit()
-        return render_template('registreer.html', title="Registreer", form=form)
-    elif request.method == 'GET':
-        return render_template('registreer.html', title="Registreer", form=form)
+
+    return render_template('registreer.html', title="Registreer", form=form)
+
 
 
 @app.route('/unauthorized')
@@ -100,39 +80,39 @@ def login():
     con.row_factory = sqlite3.Row
     cur = con.cursor()
     if request.method == 'POST':
-        session.pop('gebruikersnaam', None)
-        gebruikersnaam = request.form['gebruikersnaam']
-        wachtwoord = request.form['wachtwoord']
+        session.pop('username', None)
+        username = request.form['username']
+        password = request.form['password']
         cur = con.cursor()
-        cur.execute("SELECT gebruikersnaam, wachtwoord FROM Gebruiker WHERE gebruikersnaam=? and wachtwoord=?",
-                    (gebruikersnaam, wachtwoord))
+        cur.execute("SELECT username, password FROM User WHERE username=? and password=?",
+                    (username, password))
         data = cur.fetchone()
 
         if data:
 
-            session["gebruikersnaam"] = data[0]
-            session["wachtwoord"] = data[1]
+            session["username"] = data[0]
+            session["password"] = data[1]
             return redirect("home")
 
         else:
 
-            flash("gebruikersnaam of wachtwoord is onjuist")
+            flash("username of password is onjuist")
 
     return render_template('login1.1.html', title='Log in', form=form)
 
 
 @app.route('/getsession')
 def getsession():
-    if 'gebruikersnaam' in session:
-        gebruikersnaam = session['gebruikersnaam']
-        return f"Welcome {gebruikersnaam}"
+    if 'username' in session:
+        username = session['username']
+        return f"Welcome {username}"
     else:
         return "Welcome Anonymous"
 
 
 @app.route('/logout')
 def logout():
-    session.pop('gebruikersnaam', None)
+    session.pop('username', None)
     return redirect(url_for('login'))
 
 
