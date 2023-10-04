@@ -72,7 +72,36 @@ def registreer():
 def unauthorized():
     return "Unauthorized Access"
 
-
+"""@app.route("/", methods=['GET', 'POST'])
+def login():
+    form = LoginForm()
+    con = sqlite3.connect('testcorrect_vragen.db')
+    con.row_factory = sqlite3.Row
+    cur = con.cursor()
+    if request.method == 'POST':
+        session.pop('username', None)
+        username = request.form['username']
+        password = request.form['password']
+        cur = con.cursor()
+        cur.execute("SELECT username, password FROM User WHERE username=? and password=?",
+                    (username, password))
+        data = cur.fetchone()
+        if data:
+            session["username"] = data[0]
+            session["password"] = data[1]
+            
+            # Generate the JWT token
+            payload = {
+                'username': session['username'],
+                'exp': datetime.datetime.utcnow() + datetime.timedelta(minutes=30)
+            }
+            token = jwt.encode(payload, 'your_secret_key', algorithm='HS256')
+            
+            # Return the token to the client
+            return jsonify({'token': token})
+        else:
+            flash("Username or password is incorrect")
+    return render_template('login1.1.html', title='Log in', form=form)"""
 @app.route("/", methods=['GET', 'POST'])
 def login():
     form = LoginForm()
